@@ -259,7 +259,7 @@ function is_active($pageName)
 
       <?php
       // Tampilkan search box di halaman tertentu
-      $showSearch = in_array($currentPage, ['arsip', 'jadwal-kegiatan', 'jadwal-peminjaman-ruangan', 'pengguna', 'daftar-aduan', 'layanan-pengaduan', 'harmonisasi']);
+      $showSearch = in_array($currentPage, ['arsip', 'jadwal-kegiatan', 'jadwal-peminjaman-ruangan', 'pengguna', 'daftar-aduan', 'layanan-pengaduan', 'harmonisasi', 'tamu']);
       ?>
 
       <?php if ($showSearch): ?>

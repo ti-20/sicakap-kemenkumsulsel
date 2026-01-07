@@ -196,6 +196,14 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
       
+      if(page==='tamu') {
+        // Gunakan pagination system untuk tamu
+        if(typeof window.setCurrentFiltersTamu === 'function') {
+          window.setCurrentFiltersTamu({ search: query });
+        }
+        return;
+      }
+
       if(page==='pengguna') {
         // Gunakan pagination system untuk pengguna
         if(typeof window.setCurrentFiltersPengguna === 'function') {
