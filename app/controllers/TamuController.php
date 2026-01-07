@@ -8,19 +8,17 @@ class TamuController {
         $this->model = new TamuModel();
     }
 
-    // Halaman daftar pengguna (tamu.php)
+    // Halaman daftar Tamu (tamu.php)
     public function daftarTamu() {
         include __DIR__ . '/../views/layouts/header.php';
         include __DIR__ . '/../views/pages/tamu.php';
         include __DIR__ . '/../views/layouts/footer.php';
     }
 
-    // Halaman tambah pengguna (tambah-pengguna.php)
-    public function tambahPengguna() {
-        $roles = $this->model->getAvailableRoles();
-        
+    // Halaman tambah Tamu (tambah-tamu.php)
+    public function tambahTamu() {
         include __DIR__ . '/../views/layouts/header.php';
-        include __DIR__ . '/../views/pages/tambah-pengguna.php';
+        include __DIR__ . '/../views/pages/tambah-tamu.php';
         include __DIR__ . '/../views/layouts/footer.php';
     }
 
