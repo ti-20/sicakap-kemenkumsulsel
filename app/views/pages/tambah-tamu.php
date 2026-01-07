@@ -62,6 +62,26 @@ if (!isset($BASE)) {
             </div>
 
             <div class="form-group">
+                <label>Foto (Kamera)</label>
+
+                <!-- Video webcam -->
+                <div class="camera-wrapper">
+                    <video id="video" width="400" height="300" autoplay muted playsinline></video>
+                    <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
+                </div>
+
+                <!-- Preview foto -->
+                <img id="previewFoto" style="margin-top:10px; max-width:200px; display:none;">
+
+                <!-- Hidden input base64 -->
+                <input type="hidden" name="foto" id="foto">
+
+                <button type="button" id="captureFoto" class="btn-clear">
+                    Ambil Foto
+                </button>
+            </div>
+
+            <div class="form-group">
                 <label for="signature">Tanda Tangan</label>
 
                 <!-- Canvas untuk tanda tangan -->

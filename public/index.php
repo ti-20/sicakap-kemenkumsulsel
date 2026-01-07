@@ -223,6 +223,15 @@ switch ($page) {
         $controller->storeTamu();
         break;
 
+    case 'hapus-tamu':
+        require_once __DIR__ . '/../app/controllers/AuthController.php';
+        AuthController::requireAdmin(); // Hanya admin yang bisa akses
+
+        require_once __DIR__ . '/../app/controllers/TamuController.php';
+        $controller = new TamuController();
+        $controller->hapusTamu();
+        break;
+
     // === PENGGUNA (Admin Only) ===
     case 'pengguna':
         require_once __DIR__ . '/../app/controllers/AuthController.php';

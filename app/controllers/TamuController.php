@@ -40,6 +40,7 @@ class TamuController
         $alamat = $_POST['alamat'] ?? '';
         $tujuan = $_POST['tujuan'] ?? '';
         $ttdBase64 = $_POST['ttd'] ?? '';
+        $fotoBase64 = $_POST['foto'] ?? '';
 
         // VALIDASI
         $errors = [];
@@ -48,11 +49,39 @@ class TamuController
         if (!$email)  $errors[] = 'Email harus diisi';
         if (!$alamat) $errors[] = 'Alamat harus diisi';
         if (!$tujuan) $errors[] = 'Tujuan harus diisi';
+        if (!$fotoBase64) $errors[] = 'Foto harus diisi';
         if (!$ttdBase64) $errors[] = 'Tanda tangan harus diisi';
 
         if ($errors) {
             echo json_encode(['success' => false, 'message' => implode(', ', $errors)]);
             exit;
+        }
+
+        // Proses kamera
+        $fotoBase64 = $_POST['foto'] ?? '';
+
+        $fotoFilename = null;
+
+        if ($fotoBase64) {
+            $uploadDir = __DIR__ . '/../../public/Images/uploads/foto/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            // Hapus prefix base64
+            $fotoBase64 = preg_replace('#^data:image/\w+;base64,#i', '', $fotoBase64);
+            $fotoBinary = base64_decode($fotoBase64);
+
+            if ($fotoBinary === false) {
+                echo json_encode(['success' => false, 'message' => 'Format foto tidak valid']);
+                exit;
+            }
+
+            // NAMA FILE SESUAI CONTOH DB KAMU
+            $fotoFilename = 'B' . time() . rand(1000, 9999) . '.jpg';
+            $fotoPath = $uploadDir . $fotoFilename;
+
+            file_put_contents($fotoPath, $fotoBinary);
         }
 
         // PROSES TTD (BASE64 → PNG)
@@ -83,6 +112,7 @@ class TamuController
             'email'  => $email,
             'alamat' => $alamat,
             'tujuan' => $tujuan,
+            'foto'   => $fotoFilename,
             'ttd'    => $ttdFilename
         ];
 
@@ -91,6 +121,55 @@ class TamuController
         } else {
             echo json_encode(['success' => false, 'message' => 'Gagal menambahkan tamu']);
         }
+        exit;
+    }
+
+    // Proses hapus TAMU (AJAX)
+    public function hapusTamu()
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+            exit;
+        }
+
+        $id = $_POST['id'] ?? null;
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID tamu tidak valid']);
+            exit;
+        }
+
+        // Ambil data tamu sebelum dihapus
+        $tamu = $this->model->getTamuById($id);
+        if (!$tamu) {
+            echo json_encode(['success' => false, 'message' => 'Data tamu tidak ditemukan']);
+            exit;
+        }
+
+        // Hapus file FOTO
+        if (!empty($tamu['foto'])) {
+            $fotoPath = __DIR__ . '/../../public/Images/uploads/foto/' . $tamu['foto'];
+            if (file_exists($fotoPath)) {
+                unlink($fotoPath);
+            }
+        }
+
+        // Hapus file TTD
+        if (!empty($tamu['ttd'])) {
+            $ttdPath = __DIR__ . '/../../public/Images/uploads/ttd/' . $tamu['ttd'];
+            if (file_exists($ttdPath)) {
+                unlink($ttdPath);
+            }
+        }
+
+        // Hapus dari database
+        if ($this->model->hapusTamu($id)) {
+            echo json_encode(['success' => true, 'message' => 'Data tamu berhasil dihapus']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gagal menghapus data tamu']);
+        }
+
         exit;
     }
 
@@ -104,14 +183,11 @@ class TamuController
             exit;
         }
 
-        $pengguna = $this->model->getPenggunaById($id);
-        if (!$pengguna) {
-            $_SESSION['errors'] = ['Pengguna tidak ditemukan'];
-            header('Location: index.php?page=pengguna');
-            exit;
-        }
-
-        $roles = $this->model->getAvailableRoles();
+        // if (!$pengguna) {
+        //     $_SESSION['errors'] = ['Pengguna tidak ditemukan'];
+        //     header('Location: index.php?page=pengguna');
+        //     exit;
+        // }
 
         include __DIR__ . '/../views/layouts/header.php';
         include __DIR__ . '/../views/pages/edit-pengguna.php';
@@ -150,11 +226,6 @@ class TamuController
             if ($password !== $confirmPassword) $errors[] = 'Password dan konfirmasi password tidak sama';
         }
 
-        // Cek username sudah ada (kecuali untuk user yang sama)
-        if ($this->model->isUsernameExists($username, $id)) {
-            $errors[] = 'Username sudah digunakan';
-        }
-
         if (!empty($errors)) {
             ob_clean();
             header('Content-Type: application/json');
@@ -190,55 +261,6 @@ class TamuController
         // Jika password diisi, update password
         if (!empty($password)) {
             $data['password'] = $password;
-        }
-
-        if ($this->model->updatePengguna($id, $data)) {
-            echo json_encode(['success' => true, 'message' => 'Pengguna berhasil diperbarui']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Gagal memperbarui pengguna']);
-        }
-        exit;
-    }
-
-    // Proses hapus pengguna (AJAX)
-    public function hapusPengguna()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
-            exit;
-        }
-
-        $id = $_POST['id'] ?? null;
-        if (!$id) {
-            echo json_encode(['success' => false, 'message' => 'ID pengguna tidak valid']);
-            exit;
-        }
-
-        // Ambil data pengguna sebelum dihapus untuk mendapatkan info foto
-        $pengguna = $this->model->getPenggunaById($id);
-        if (!$pengguna) {
-            echo json_encode(['success' => false, 'message' => 'Pengguna tidak ditemukan']);
-            exit;
-        }
-
-        // Hapus foto profil jika bukan foto default
-        $fileDeleted = true;
-        if (!empty($pengguna['foto']) && $pengguna['foto'] !== 'user.jpg') {
-            $filePath = __DIR__ . '/../../public/Images/users/' . $pengguna['foto'];
-            if (file_exists($filePath)) {
-                $fileDeleted = unlink($filePath);
-                if (!$fileDeleted) {
-                    error_log("[WARNING] Gagal hapus foto profil: " . $filePath);
-                    // Tidak exit, tetap lanjut hapus dari database
-                }
-            }
-        }
-
-        // Hapus pengguna dari database
-        if ($this->model->hapusPengguna($id)) {
-            echo json_encode(['success' => true, 'message' => 'Pengguna berhasil dihapus']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Gagal menghapus pengguna']);
         }
         exit;
     }

@@ -12,9 +12,15 @@ class TamuModel
         $this->db = $conn;
     }
 
-    /**
-     * Simpan data tamu baru
-     */
+    // Ambil satu data tamu
+    public function getTamuById($id)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM tb_tamu WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Simpan data tamu baru
     public function tambahTamu(array $data)
     {
         try {
@@ -33,11 +39,17 @@ class TamuModel
                 ':tujuan' => $data['tujuan'],
                 ':ttd'    => $data['ttd'],
             ]);
-
         } catch (PDOException $e) {
             // Untuk debugging (hapus di production)
             // error_log($e->getMessage());
             return false;
         }
+    }
+
+    // Hapus tamu
+    public function hapusTamu($id)
+    {
+        $stmt = $this->db->prepare("DELETE FROM tb_tamu WHERE id = ?");
+        return $stmt->execute([$id]);
     }
 }

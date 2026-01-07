@@ -1,30 +1,30 @@
 // Tambah Pengguna Form Management
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('formTambahTamu');
     const fotoInput = document.getElementById('foto');
     const preview = document.getElementById('previewImage');
-        
+
     // Validasi form
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', function (e) {
         e.preventDefault();
-        
+
         const nama = document.getElementById('nama').value.trim();
         const telp = document.getElementById('telp').value.trim();
         const email = document.getElementById('email').value;
         const alamat = document.getElementById('alamat').value;
         const tujuan = document.getElementById('tujuan').value;
-        
+
         // Validasi client-side
         if (!nama) {
             Swal.fire('Error!', 'Nama harus diisi', 'error');
             return;
         }
-        
+
         if (!telp) {
             Swal.fire('Error!', 'No Telpon/WA harus diisi', 'error');
             return;
         }
-        
+
         if (!email) {
             Swal.fire('Error!', 'Email harus diisi', 'error');
             return;
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
             Swal.fire('Error!', 'Maksud/Tujuan bertamu harus diisi', 'error');
             return;
         }
-        
+
         // Submit form
         Swal.fire({
             title: 'Konfirmasi',
@@ -54,44 +54,86 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.isConfirmed) {
                 // AJAX submission
                 const formData = new FormData(form);
-                
+
                 fetch('index.php?page=store-tamu', {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: data.message,
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(() => {
-                            window.location.href = 'index.php?page=tamu';
-                        });
-                    } else {
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: data.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.href = 'index.php?page=tamu';
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal!',
+                                text: data.message,
+                                showConfirmButton: true
+                            });
+                        }
+                    })
+                    .catch(error => {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Gagal!',
-                            text: data.message,
+                            title: 'Error!',
+                            text: 'Terjadi kesalahan saat menambahkan tamu',
                             showConfirmButton: true
                         });
-                    }
-                })
-                .catch(error => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Terjadi kesalahan saat menambahkan tamu',
-                        showConfirmButton: true
                     });
-                });
             }
         });
     });
 });
+
+// Form Kamera
+document.addEventListener("DOMContentLoaded", function () {
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const captureBtn = document.getElementById("captureFoto");
+    const fotoInput = document.getElementById("foto");
+    const preview = document.getElementById("previewFoto");
+
+    if (!video) return;
+
+    // Akses webcam
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            console.log('Kamera aktif');
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            console.error('Kamera error:', err);
+            Swal.fire(
+                'Kamera Tidak Aktif',
+                'Browser menolak akses kamera. Pastikan HTTPS atau localhost.',
+                'error'
+            );
+        });
+
+    // Capture foto
+    captureBtn.addEventListener("click", function () {
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const base64Image = canvas.toDataURL("image/jpeg");
+
+        // Simpan ke input hidden
+        fotoInput.value = base64Image;
+
+        // Preview
+        preview.src = base64Image;
+        preview.style.display = "block";
+    });
+});
+
 
 // form tanda tangan
 document.addEventListener("DOMContentLoaded", function () {
