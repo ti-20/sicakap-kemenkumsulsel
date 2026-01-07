@@ -3,21 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('formTambahTamu');
     const fotoInput = document.getElementById('foto');
     const preview = document.getElementById('previewImage');
-    
-    // Preview foto
-    // if (fotoInput) {
-    //     fotoInput.addEventListener('change', function() {
-    //         const file = this.files[0];
-    //         if (file) {
-    //             const reader = new FileReader();
-    //             reader.onload = function(e) {
-    //                 preview.setAttribute('src', e.target.result);
-    //             }
-    //             reader.readAsDataURL(file);
-    //         }
-    //     });
-    // }
-    
+        
     // Validasi form
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -105,4 +91,49 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+});
+
+// form tanda tangan
+document.addEventListener("DOMContentLoaded", function () {
+    const canvas = document.getElementById("signature-pad");
+    const clearBtn = document.getElementById("clear-signature");
+    const inputTTD = document.getElementById("ttd");
+
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+
+    // Set garis
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+
+    // Mouse events
+    canvas.addEventListener("mousedown", () => drawing = true);
+    canvas.addEventListener("mouseup", () => {
+        drawing = false;
+        ctx.beginPath();
+        saveSignature();
+    });
+    canvas.addEventListener("mousemove", draw);
+
+    function draw(e) {
+        if (!drawing) return;
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(e.offsetX, e.offsetY);
+    }
+
+    // Clear canvas
+    clearBtn.addEventListener("click", () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        inputTTD.value = "";
+    });
+
+    // Simpan base64 ke input hidden
+    function saveSignature() {
+        inputTTD.value = canvas.toDataURL("image/png");
+    }
 });

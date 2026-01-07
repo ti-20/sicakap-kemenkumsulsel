@@ -1,95 +1,104 @@
 <?php
 require_once __DIR__ . '/../models/TamuModel.php';
 
-class TamuController {
+class TamuController
+{
     private $model;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->model = new TamuModel();
     }
 
     // Halaman daftar Tamu (tamu.php)
-    public function daftarTamu() {
+    public function daftarTamu()
+    {
         include __DIR__ . '/../views/layouts/header.php';
         include __DIR__ . '/../views/pages/tamu.php';
         include __DIR__ . '/../views/layouts/footer.php';
     }
 
     // Halaman tambah Tamu (tambah-tamu.php)
-    public function tambahTamu() {
+    public function tambahTamu()
+    {
         include __DIR__ . '/../views/layouts/header.php';
         include __DIR__ . '/../views/pages/tambah-tamu.php';
         include __DIR__ . '/../views/layouts/footer.php';
     }
 
-    // Proses tambah pengguna
-    public function storePengguna() {
+    // Proses tambah tamu
+    public function storeTamu()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Method not allowed']);
             exit;
         }
 
-        $nama = trim($_POST['nama'] ?? '');
-        $username = trim($_POST['username'] ?? '');
-        $password = $_POST['password'] ?? '';
-        $confirmPassword = $_POST['confirm_password'] ?? '';
-        $role = $_POST['role'] ?? 'Operator';
+        $nama   = trim($_POST['nama'] ?? '');
+        $telp   = trim($_POST['telp'] ?? '');
+        $email  = $_POST['email'] ?? '';
+        $alamat = $_POST['alamat'] ?? '';
+        $tujuan = $_POST['tujuan'] ?? '';
+        $ttdBase64 = $_POST['ttd'] ?? '';
 
-        // Validasi
+        // VALIDASI
         $errors = [];
-        if (empty($nama)) $errors[] = 'Nama harus diisi';
-        if (empty($username)) $errors[] = 'Username harus diisi';
-        if (empty($password)) $errors[] = 'Password harus diisi';
-        if (strlen($password) < 6) $errors[] = 'Password minimal 6 karakter';
-        if ($password !== $confirmPassword) $errors[] = 'Password dan konfirmasi password tidak sama';
-        if (!in_array($role, ['Admin', 'Operator', 'p3h'])) $errors[] = 'Role tidak valid';
+        if (!$nama)   $errors[] = 'Nama harus diisi';
+        if (!$telp)   $errors[] = 'No Telepon harus diisi';
+        if (!$email)  $errors[] = 'Email harus diisi';
+        if (!$alamat) $errors[] = 'Alamat harus diisi';
+        if (!$tujuan) $errors[] = 'Tujuan harus diisi';
+        if (!$ttdBase64) $errors[] = 'Tanda tangan harus diisi';
 
-        // Cek username sudah ada
-        if ($this->model->isUsernameExists($username)) {
-            $errors[] = 'Username sudah digunakan';
-        }
-
-        if (!empty($errors)) {
-            ob_clean();
-            header('Content-Type: application/json');
+        if ($errors) {
             echo json_encode(['success' => false, 'message' => implode(', ', $errors)]);
             exit;
         }
 
-        // Handle foto upload
-        $foto = 'user.jpg'; // Default foto
-        if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../../public/Images/users/';
-            $fileExtension = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
-            $fileName = 'user_' . time() . '_' . rand(1000, 9999) . '.' . $fileExtension;
-            $uploadPath = $uploadDir . $fileName;
-            
-            if (move_uploaded_file($_FILES['foto']['tmp_name'], $uploadPath)) {
-                $foto = $fileName;
-            }
+        // PROSES TTD (BASE64 → PNG)
+        $uploadDir = __DIR__ . '/../../public/Images/uploads/ttd/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
         }
 
-        // Simpan data
+        // Hapus prefix base64
+        $ttdBase64 = preg_replace('#^data:image/\w+;base64,#i', '', $ttdBase64);
+        $ttdBinary = base64_decode($ttdBase64);
+
+        if ($ttdBinary === false) {
+            echo json_encode(['success' => false, 'message' => 'Format tanda tangan tidak valid']);
+            exit;
+        }
+
+        // Nama file sesuai contoh database kamu
+        $ttdFilename = 'A' . time() . rand(1000, 9999) . '.png';
+        $ttdPath = $uploadDir . $ttdFilename;
+
+        file_put_contents($ttdPath, $ttdBinary);
+
+        // SIMPAN KE DATABASE
         $data = [
-            'nama' => $nama,
-            'username' => $username,
-            'password' => $password,
-            'role' => $role,
-            'foto' => $foto
+            'nama'   => $nama,
+            'telp'   => $telp,
+            'email'  => $email,
+            'alamat' => $alamat,
+            'tujuan' => $tujuan,
+            'ttd'    => $ttdFilename
         ];
 
-        if ($this->model->tambahPengguna($data)) {
-            echo json_encode(['success' => true, 'message' => 'Pengguna berhasil ditambahkan']);
+        if ($this->model->tambahTamu($data)) {
+            echo json_encode(['success' => true, 'message' => 'Tamu berhasil ditambahkan']);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Gagal menambahkan pengguna']);
+            echo json_encode(['success' => false, 'message' => 'Gagal menambahkan tamu']);
         }
         exit;
     }
 
     // Halaman edit pengguna (edit-pengguna.php)
-    public function editPengguna() {
+    public function editPengguna()
+    {
         $id = $_GET['id'] ?? null;
-        
+
         if (!$id) {
             header('Location: index.php?page=pengguna');
             exit;
@@ -103,14 +112,15 @@ class TamuController {
         }
 
         $roles = $this->model->getAvailableRoles();
-        
+
         include __DIR__ . '/../views/layouts/header.php';
         include __DIR__ . '/../views/pages/edit-pengguna.php';
         include __DIR__ . '/../views/layouts/footer.php';
     }
 
     // Proses update pengguna
-    public function updatePengguna() {
+    public function updatePengguna()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Method not allowed']);
             exit;
@@ -133,7 +143,7 @@ class TamuController {
         if (empty($nama)) $errors[] = 'Nama harus diisi';
         if (empty($username)) $errors[] = 'Username harus diisi';
         if (!in_array($role, ['Admin', 'Operator', 'p3h'])) $errors[] = 'Role tidak valid';
-        
+
         // Validasi password jika diisi
         if (!empty($password)) {
             if (strlen($password) < 6) $errors[] = 'Password minimal 6 karakter';
@@ -159,7 +169,7 @@ class TamuController {
             $fileExtension = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
             $fileName = 'user_' . $id . '_' . time() . '.' . $fileExtension;
             $uploadPath = $uploadDir . $fileName;
-            
+
             if (move_uploaded_file($_FILES['foto']['tmp_name'], $uploadPath)) {
                 $foto = $fileName;
             }
@@ -191,7 +201,8 @@ class TamuController {
     }
 
     // Proses hapus pengguna (AJAX)
-    public function hapusPengguna() {
+    public function hapusPengguna()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Method not allowed']);
             exit;
@@ -233,7 +244,8 @@ class TamuController {
     }
 
     // Halaman edit profil (edit-profil.php)
-    public function editProfilPengguna() {
+    public function editProfilPengguna()
+    {
         // nanti bisa pakai data user yang sedang login
         // $profil = $this->model->getProfilByUserId($userId);
 
@@ -243,10 +255,11 @@ class TamuController {
     }
 
     // Proses update profil pengguna
-    public function updateProfilPengguna() {
+    public function updateProfilPengguna()
+    {
         // Suppress semua output sebelum JSON
         ob_clean();
-        
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             ob_clean();
             header('Content-Type: application/json');
@@ -272,7 +285,7 @@ class TamuController {
         $errors = [];
         if (empty($nama)) $errors[] = 'Nama harus diisi';
         if (empty($username)) $errors[] = 'Username harus diisi';
-        
+
         // Validasi password jika diisi
         if (!empty($password)) {
             if (strlen($password) < 6) $errors[] = 'Password minimal 6 karakter';
@@ -296,9 +309,9 @@ class TamuController {
         if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
             require_once __DIR__ . '/../helpers/SecureFileUpload.php';
             $uploadHandler = new SecureFileUpload('users');
-            
+
             $uploadResult = $uploadHandler->uploadFile('foto', 'user');
-            
+
             if ($uploadResult['success']) {
                 // Hapus foto lama jika bukan foto default
                 $fotoLama = $_SESSION['user']['foto'] ?? 'user.jpg';
@@ -334,7 +347,7 @@ class TamuController {
             $_SESSION['user']['username'] = $username;
             $_SESSION['user']['foto'] = $foto;
             // Role tidak perlu diupdate karena sudah ada di session
-            
+
             // Clear output buffer dan set header untuk JSON response
             ob_clean();
             header('Content-Type: application/json');

@@ -1,5 +1,5 @@
 <?php
-// app/models/UserModel.php
+// app/models/TamuModel.php
 require_once __DIR__ . '/../../config/database.php';
 
 class TamuModel
@@ -12,40 +12,31 @@ class TamuModel
         $this->db = $conn;
     }
 
-    // Ambil user berdasarkan username
-    public function getUserByUsername($username) {
+    /**
+     * Simpan data tamu baru
+     */
+    public function tambahTamu(array $data)
+    {
         try {
-            $stmt = $this->db->prepare("SELECT * FROM pengguna WHERE username = ?");
-            $stmt->execute([$username]);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        } catch (Exception $e) {
-            return false;
-        }
-    }
+            $sql = "INSERT INTO tb_tamu 
+                    (nama, telp, email, alamat, tujuan, ttd, tgl, jam) 
+                    VALUES 
+                    (:nama, :telp, :email, :alamat, :tujuan, :ttd, CURDATE(), CURTIME())";
 
-    // Verifikasi password
-    public function verifyPassword($password, $hashedPassword) {
-        return password_verify($password, $hashedPassword);
-    }
+            $stmt = $this->db->prepare($sql);
 
-    // Update last login (optional)
-    public function updateLastLogin($userId) {
-        try {
-            $stmt = $this->db->prepare("UPDATE pengguna SET last_login = NOW() WHERE id_pengguna = ?");
-            $stmt->execute([$userId]);
-            return true;
-        } catch (Exception $e) {
-            return false;
-        }
-    }
+            return $stmt->execute([
+                ':nama'   => $data['nama'],
+                ':telp'   => $data['telp'],
+                ':email'  => $data['email'],
+                ':alamat' => $data['alamat'],
+                ':tujuan' => $data['tujuan'],
+                ':ttd'    => $data['ttd'],
+            ]);
 
-    // Cek apakah user ada
-    public function userExists($username) {
-        try {
-            $stmt = $this->db->prepare("SELECT COUNT(*) FROM pengguna WHERE username = ?");
-            $stmt->execute([$username]);
-            return $stmt->fetchColumn() > 0;
-        } catch (Exception $e) {
+        } catch (PDOException $e) {
+            // Untuk debugging (hapus di production)
+            // error_log($e->getMessage());
             return false;
         }
     }

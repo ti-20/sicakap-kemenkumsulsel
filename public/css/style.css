@@ -1318,7 +1318,8 @@ body.dark .status-error {
 
 .btn-simpan:hover,
 .btn-batal:hover,
-.btn-tambah:hover {
+.btn-tambah:hover,
+.btn-clear:hover {
   background:   #0077ff;
   color: #fff;
 }
@@ -1937,6 +1938,35 @@ body.dark .filters span {
   color: var(--text-color) !important; /* gunakan warna teks terang */
 }
 
+
+/* CSS untuk Halaman Tamu - Admin */
+.signature-wrapper {
+  border: 1px solid #999;
+  border-radius: 4px;
+  width: 100%;
+  max-width: 420px;
+  height: 200px;
+  background: #fff;
+}
+
+.signature-wrapper canvas {
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.btn-clear {
+  width: auto;
+  max-width: 100px;
+  margin-top: 8px;
+  padding: 6px 14px;
+  background: #3793fc;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
 
 /* 🔹 CSS Khusus untuk Halaman Arsip */
 .arsip-page .activity-wrapper {
