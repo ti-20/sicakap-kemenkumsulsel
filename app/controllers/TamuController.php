@@ -39,8 +39,8 @@ class TamuController
         $email  = $_POST['email'] ?? '';
         $alamat = $_POST['alamat'] ?? '';
         $tujuan = $_POST['tujuan'] ?? '';
+        // $fotoBase64 = $_POST['foto'] ?? '';
         $ttdBase64 = $_POST['ttd'] ?? '';
-        $fotoBase64 = $_POST['foto'] ?? '';
 
         // VALIDASI
         $errors = [];
@@ -49,7 +49,7 @@ class TamuController
         if (!$email)  $errors[] = 'Email harus diisi';
         if (!$alamat) $errors[] = 'Alamat harus diisi';
         if (!$tujuan) $errors[] = 'Tujuan harus diisi';
-        if (!$fotoBase64) $errors[] = 'Foto harus diisi';
+        // if (!$fotoBase64) $errors[] = 'Foto harus diisi';
         if (!$ttdBase64) $errors[] = 'Tanda tangan harus diisi';
 
         if ($errors) {
@@ -112,7 +112,7 @@ class TamuController
             'email'  => $email,
             'alamat' => $alamat,
             'tujuan' => $tujuan,
-            'foto'   => $fotoFilename,
+            // 'foto'   => $fotoFilename,
             'ttd'    => $ttdFilename
         ];
 

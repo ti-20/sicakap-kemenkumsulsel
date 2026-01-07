@@ -215,8 +215,8 @@ switch ($page) {
         break;
 
     case 'store-tamu':
-        require_once __DIR__ . '/../app/controllers/AuthController.php';
-        AuthController::requireAdmin(); // Hanya admin yang bisa akses
+        // require_once __DIR__ . '/../app/controllers/AuthController.php';
+        // AuthController::requireAdmin(); // Hanya admin yang bisa akses
 
         require_once __DIR__ . '/../app/controllers/TamuController.php';
         $controller = new TamuController();

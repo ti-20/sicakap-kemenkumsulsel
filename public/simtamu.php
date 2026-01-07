@@ -49,7 +49,6 @@ $BASE = rtrim($BASE, '/');
     <link rel="stylesheet" href="<?= $BASE ?>/css/simtamu.css?v=<?= $version ?>">
     <link rel="stylesheet" href="<?= $BASE ?>/vendor/fontawesome/css/all.min.css">
 
-
 </head>
 
 <body>
@@ -67,7 +66,7 @@ $BASE = rtrim($BASE, '/');
                 <div class="line-2">SULAWESI SELATAN</div>
             </div>
         </div>
-        
+
         <!-- BODY -->
         <div class="section-content">
 
@@ -122,16 +121,23 @@ $BASE = rtrim($BASE, '/');
                             <input type="text" name="tujuan" placeholder="Maksud/Tujuan Bertamu" required>
                         </div>
 
+                        <!-- Kamera -->
                         <div class="form-group">
                             <label>Kamera</label>
                             <div id="my_camera" class="camera-box"></div>
+
+                            <!-- WAJIB -->
+                            <input type="hidden" name="foto" id="foto">
                         </div>
 
+                        <!-- Tanda tangan -->
                         <div class="form-group">
                             <label>Tanda Tangan</label>
                             <div id="sig" class="signature-box"></div>
                             <button type="button" id="clear" class="btn-clear">Clear</button>
-                            <textarea id="signature64" name="signed" hidden></textarea>
+
+                            <!-- WAJIB -->
+                            <input type="hidden" name="ttd" id="ttd">
                         </div>
 
                         <button type="button" id="BSimpan" class="btn-submit">
@@ -174,6 +180,8 @@ $BASE = rtrim($BASE, '/');
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<?= $BASE ?>/js/simtamu.js?v=<?= $version ?>"></script>
 </body>
 
 </html>
