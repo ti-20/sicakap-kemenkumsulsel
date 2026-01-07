@@ -93,10 +93,15 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
 
         <div class="data tanggal">
-          <span class="data-title">Tanggal</span>
-          ${data.map(t => `<span class="data-list">${formatTanggal(t.tgl)}</span>`).join('')}
+            <span class="data-title">Tanggal</span>
+            ${data.map(t => `
+                <span class="data-list">
+                ${formatTanggal(t.tgl)}<br>
+                ${t.jam ?? '-'}
+                </span>
+            `).join('')}
         </div>
-  
+
         <div class="data nama">
           <span class="data-title">Nama Tamu</span>
           ${data.map(t => `<span class="data-list">${t.nama}</span>`).join('')}
@@ -123,8 +128,18 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
         
         <div class="data ttd">
-          <span class="data-title">TTD</span>
-          ${data.map(t => `<span class="data-list">${t.ttd}</span>`).join('')}
+            <span class="data-title">TTD</span>
+            ${data.map(t => `
+                <span class="data-list">
+                ${t.ttd
+                            ? `<img 
+                        src="Images/uploads/ttd/${t.ttd}" 
+                        alt="TTD ${t.nama}" 
+                        class="img-ttd"
+                    >`
+                            : '-'}
+                </span>
+            `).join('')}
         </div>
 
         <div class="data foto">
