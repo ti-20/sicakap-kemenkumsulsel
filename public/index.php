@@ -184,6 +184,16 @@ switch ($page) {
         $controller->arsip();
         break;
 
+    // === BUKU TAMU (Admin Only) ===
+    case 'tamu':
+        require_once __DIR__ . '/../app/controllers/AuthController.php';
+        AuthController::requireAdmin(); // Hanya admin yang bisa akses
+        
+        require_once __DIR__ . '/../app/controllers/TamuController.php';
+        $controller = new TamuController();
+        $controller->daftarTamu();
+        break;
+
     // === PENGGUNA (Admin Only) ===
     case 'pengguna':
         require_once __DIR__ . '/../app/controllers/AuthController.php';
